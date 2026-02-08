@@ -5,7 +5,7 @@ dotenv.config();
 export const config = {
   ollama: {
     baseUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
-    model: process.env.OLLAMA_MODEL || 'qwen2.5:7b',
+    model: process.env.OLLAMA_MODEL || 'llama3.1:8b',
     embeddingModel: process.env.EMBEDDING_MODEL || 'nomic-embed-text',
     embeddingDimensions: parseInt(process.env.EMBEDDING_DIMENSIONS) || 768,
   },

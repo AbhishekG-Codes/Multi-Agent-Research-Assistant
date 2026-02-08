@@ -35,13 +35,13 @@ Two intelligent agents work together:
    - **Stores in MongoDB** for future queries
    - **Then:** Falls back to Tavily web search if still no relevant content
 
-Both agents use **Ollama's qwen2.5:7b** model for natural language understanding and **nomic-embed-text** for semantic search.
+Both agents use **Ollama's llama3.1:8b** model for natural language understanding and **nomic-embed-text** for semantic search.
 
 ## 🚀 Tech Stack
 
 **Backend:** Node.js, Express, LangGraph, LangChain, Ollama, MongoDB  
 **Frontend:** React, Vite, CSS3  
-**AI:** Ollama (qwen2.5:7b + nomic-embed-text)  
+**AI:** Ollama (llama3.1:8b + nomic-embed-text)  
 **Search:** Tavily API for web results
 
 ## ⚡ Quick Start
@@ -51,7 +51,7 @@ Both agents use **Ollama's qwen2.5:7b** model for natural language understanding
 **Prerequisites:**
 - Node.js v18+
 - MongoDB (local or Atlas)
-- Ollama with `qwen2.5:7b` and `nomic-embed-text` models
+- Ollama with `llama3.1:8b` and `nomic-embed-text` models
 - Tavily API key
 
 **Start the application:**
@@ -79,8 +79,10 @@ cd frontend && npm run dev
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
 | `/api/chat` | POST | Send query, get answer with sources |
+| `/api/chat/stream` | POST | Streaming chat with SSE |
 | `/api/ingest/pdf` | POST | Upload and process PDF |
 | `/api/documents` | GET | List all documents |
+| `/api/documents/:id` | DELETE | Delete a document |
 | `/api/health` | GET | Server health check |
 
 ## 📁 Project Structure
@@ -104,7 +106,7 @@ kofuku/
 
 Environment variables (backend `.env`):
 ```env
-OLLAMA_MODEL=qwen2.5:7b
+OLLAMA_MODEL=llama3.1:8b
 EMBEDDING_MODEL=nomic-embed-text
 MONGODB_URI=mongodb://localhost:27017
 TAVILY_API_KEY=your_key_here

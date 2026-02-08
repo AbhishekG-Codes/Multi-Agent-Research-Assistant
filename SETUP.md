@@ -100,7 +100,7 @@ Install required software:
 # 1. Ollama
 # Download from https://ollama.ai
 # Then pull models:
-ollama pull qwen2.5:7b
+ollama pull llama3.1:8b
 ollama pull nomic-embed-text
 
 # Verify:
@@ -137,7 +137,7 @@ nano .env  # or your preferred editor
 
 ```env
 OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=qwen2.5:7b
+OLLAMA_MODEL=llama3.1:8b
 EMBEDDING_MODEL=nomic-embed-text
 EMBEDDING_DIMENSIONS=768
 
@@ -219,10 +219,10 @@ ollama serve
 
 # Check models are pulled:
 ollama list
-# Should show qwen2.5:7b and nomic-embed-text
+# Should show llama3.1:8b and nomic-embed-text
 
 # If not, pull them:
-ollama pull qwen2.5:7b
+ollama pull llama3.1:8b
 ollama pull nomic-embed-text
 ```
 

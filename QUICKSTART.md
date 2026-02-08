@@ -9,7 +9,7 @@
 # Visit https://ollama.ai and download for macOS
 
 # Pull required models
-ollama pull qwen2.5:7b
+ollama pull llama3.1:8b
 ollama pull nomic-embed-text
 ```
 

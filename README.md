@@ -16,20 +16,24 @@ Ask any question and the system intelligently decides whether to answer from:
 
 ![PDF Answer Example](assets/fromknowledgeBase-pdf.png)
 
-The system retrieves information from stored diabetes research PDFs, showing a green badge and PDF sources with page numbers.
+The system retrieves information from stored diabetes research PDFs. **Notice the GREEN highlighted badge** "📄 Answered from PDF Knowledge Base" above the response, plus PDF sources with page numbers.
 
 **Answered from Tavily Web Search:**
 
 ![Web Search Answer Example](assets/from-Tavily.png)
 
-When the query isn't covered by PDFs, the system searches the web via Tavily and shows a purple badge with web sources.
+When the query isn't covered by PDFs, the system searches the web via Tavily. **Notice the PURPLE highlighted badge** "🌐 Answered from Tavily Web Search" above the response, plus web sources with URLs.
 
 ## 🏗️ Architecture
 
 Two intelligent agents work together:
 
-1. **Master Agent** - Searches PDF metadata and vector embeddings with relevance scoring
-2. **Sub Agent** - Triggered when PDFs don't have relevant content, searches the web via Tavily
+1. **Master Agent** - Searches PDF metadata and vector embeddings with relevance scoring (threshold: 0.6)
+2. **Sub Agent** - When Master finds no relevant content:
+   - **First:** Scans `uploads/` folder for new PDF files
+   - **Extracts metadata** (topic, exercise, metric) and creates searchable chunks
+   - **Stores in MongoDB** for future queries
+   - **Then:** Falls back to Tavily web search if still no relevant content
 
 Both agents use **Ollama's qwen2.5:7b** model for natural language understanding and **nomic-embed-text** for semantic search.
 
@@ -63,7 +67,8 @@ cd frontend && npm run dev
 
 **Dual-source intelligence** - PDF documents + web search  
 **Smart routing** - Automatically chooses the best source  
-**Search method badges** - See whether answer came from PDF or web  
+✅ **Visual source indicators** - **GREEN badge** for PDF, **PURPLE badge** for web search  
+✅ **Color-coded responses** - Clear visual distinction between PDF and Tavily sources  
 **Relevance scoring** - 0.6 threshold ensures quality results  
 **Compact UI** - Expandable source citations  
 **Metadata-first** - Fast filtering before vector search  

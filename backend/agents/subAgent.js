@@ -11,21 +11,78 @@ const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
 const MIN_CHUNKS_THRESHOLD = 3;
 
 /**
- * Sub Agent node - handles PDF and web ingestion
+ * Sub Agent node - handles PDF scanning/ingestion and web search fallback
  * @param {Object} state - Current system state
  * @returns {Promise<Command>} Command to return to Master Agent
  */
 export async function subAgentNode(state) {
   console.log('\n🤖 Sub Agent activated');
-  console.log('   Task: Search the web for information not in DB');
+  console.log('   Task: Scan files for new PDFs, then search web if needed');
 
   try {
     const metadata = state.parsedMetadata;
     let allChunks = [];
+    let pdfChunks = [];
     let webChunks = [];
 
-    // Step 1: ALWAYS try web search first (Sub Agent is only called when DB content isn't relevant)
-    console.log('\n   Step 1: Triggering web search...');
+    // Step 1: Check uploads/ directory for unprocessed PDFs
+    console.log('\n   Step 1: Scanning uploads/ directory for PDFs...');
+    
+    try {
+      const pdfResults = await processPDFDirectory(UPLOADS_DIR);
+      
+      if (pdfResults && pdfResults.length > 0) {
+        // Filter out failed results
+        const successfulResults = pdfResults.filter(r => r.chunks && r.chunks.length > 0);
+        
+        if (successfulResults.length > 0) {
+          console.log(`   ✅ Found ${successfulResults.length} new PDFs to process`);
+          
+          // Store all PDF chunks in MongoDB
+          for (const result of successfulResults) {
+            try {
+              await insertChunks(result.chunks);
+              pdfChunks.push(...result.chunks);
+              console.log(`   ✅ Stored ${result.chunks.length} chunks from ${result.filename}`);
+            } catch (err) {
+              console.warn(`   ⚠️  Failed to store chunks from ${result.filename}:`, err.message);
+            }
+          }
+          
+          if (pdfChunks.length > 0) {
+            console.log(`   ✅ Total PDF chunks stored: ${pdfChunks.length}`);
+            console.log('   Returning to Master Agent to re-query with new data...');
+            
+            // Return to Master Agent so it can re-query the now-populated database
+            return new Command({
+              goto: 'masterAgent',
+              update: {
+                foundInDB: false, // Master should re-check
+                currentAgent: 'masterAgent',
+                agentStatus: 'PDFs processed, re-querying database',
+                messages: [
+                  ...state.messages,
+                  {
+                    role: 'system',
+                    content: `Sub Agent: Processed ${successfulResults.length} PDF(s), returning to Master Agent for re-query`,
+                  },
+                ],
+              },
+            });
+          }
+        } else {
+          console.log('   ℹ️  No new PDFs to process (all already in database)');
+        }
+      } else {
+        console.log('   ℹ️  No PDFs found in uploads/ directory');
+      }
+    } catch (error) {
+      console.warn('   ⚠️  PDF scanning error:', error.message);
+      // Continue to web search fallback
+    }
+
+    // Step 2: No new PDFs or they didn't help - try web search
+    console.log('\n   Step 2: Triggering web search fallback...');
 
     try {
       // Use the original user query for web search
@@ -130,8 +187,8 @@ Provide a clear, concise answer based on the web results. Include relevant citat
         console.warn('   ⚠️  Web search error:', error.message);
       }
 
-    // Step 2: No web results — return to Master Agent with failure
-    console.log('\n   ❌ Could not find information via web search');
+    // Step 3: No PDFs and no web results — return to Master Agent with failure
+    console.log('\n   ❌ Could not find information via PDF scan or web search');
     console.log('   Returning to Master Agent...');
 
     return new Command({
